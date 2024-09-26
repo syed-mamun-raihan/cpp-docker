@@ -12,15 +12,15 @@ RUN apt-get update && \
         netcat-traditional \
 
 #copy application
-WORKDIR ./workspace
+WORKDIR ./myapp
 COPY src/ ./src/
 COPY CMakeLists.txt .
  
 # Budild application
-WORKDIR ./workspace/build
+WORKDIR ./myapp/build
 
 RUN cmake -DCMAKE_BUILD_TYPE=Release .. && \
     cmake --build . --parallel 8
   
 # Start app
-ENTRYPOINT [ "./workspace/build/src/myapp" ]
+ENTRYPOINT [ "./myapp/build/src/myapp" ]

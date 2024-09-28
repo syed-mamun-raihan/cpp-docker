@@ -53,11 +53,11 @@ class TradeProcessor
         std::recursive_mutex output_mutex;
 
     private:
-        bool LimitBuyOrder(TradeInputValues& value, Orders& sellOrders);
-        bool LimitSellOrder(TradeInputValues& value, Orders& buyOrders);
+        bool LimitBuyOrder(TradeInputValues& value, Orders& sellOrders, tobRecord& tob);
+        bool LimitSellOrder(TradeInputValues& value, Orders& buyOrders, tobRecord& tob);
 
-        bool MarketBuyOrder(TradeInputValues& value, Orders& sellOrders);
-        bool MarketSellOrder(TradeInputValues& value, Orders& buyOrders);
+        bool MarketBuyOrder(TradeInputValues& value, Orders& sellOrders, tobRecord& tob);
+        bool MarketSellOrder(TradeInputValues& value, Orders& buyOrders, tobRecord& tob);
 
         bool ClearOrder(const TradeInputValues& value);
         bool Flush();
@@ -67,7 +67,7 @@ class TradeProcessor
     private:
         Books books;
         tobBooks tob_books;
-        std::mutex mutex_;
+        std::recursive_mutex mutex;
 }; 
 
 }

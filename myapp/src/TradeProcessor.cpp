@@ -5,13 +5,18 @@ using namespace Trade;
 /**
  * match buy to sell limit using price-time priority
  */
-bool TradeProcessor::LimitBuyOrder(TradeInputValues& value, Orders& sellOrders)
+bool TradeProcessor::LimitBuyOrder(TradeInputValues& value, Orders& sellOrders, tobRecord& tob)
 {
     for(auto it = sellOrders.begin(); it != sellOrders.end(); it++)
     {
         auto& sell = *it;
         if(sell.price == value.price)
         {
+            if(value.price == tob.first)
+            {
+                tob.first = 0; // reset TOB
+            }
+
             if(sell.qty >= value.qty)
             {
                 sell.qty -= value.qty;
@@ -41,13 +46,17 @@ bool TradeProcessor::LimitBuyOrder(TradeInputValues& value, Orders& sellOrders)
 /**
  * match sell to buy limit using price-time priority
  */
-bool TradeProcessor::LimitSellOrder(TradeInputValues& value, Orders& buyOrders)
+bool TradeProcessor::LimitSellOrder(TradeInputValues& value, Orders& buyOrders, tobRecord& tob)
 {
     for(auto it = buyOrders.begin(); it != buyOrders.end(); it++)
     {
         auto& buy = *it;
         if(buy.price == value.price)
         {
+            if(value.price == tob.first)
+            {
+                tob.first = 0; // reset TOB
+            }
             if(buy.qty >= value.qty)
             {
                 buy.qty -= value.qty;
@@ -77,13 +86,17 @@ bool TradeProcessor::LimitSellOrder(TradeInputValues& value, Orders& buyOrders)
 /**
  * match Buy to Sell market Order
  */
-bool TradeProcessor::MarketBuyOrder(TradeInputValues& value, Orders& sellOrders)
+bool TradeProcessor::MarketBuyOrder(TradeInputValues& value, Orders& sellOrders, tobRecord& tob)
 {
     for(auto it = sellOrders.begin(); it != sellOrders.end(); it++)
     {
         auto& sell = *it;
         if(sell.qty >= value.qty)
         {
+            if(sell.price == tob.first)
+            {
+                tob.first = 0; // reset TOB
+            }
             sell.qty -= value.qty;
             // T, userIdBuy, userOrderIdBuy, userIdSell, userOrderIdSell, price, quantity
             std::lock_guard l(output_mutex);
@@ -109,13 +122,17 @@ bool TradeProcessor::MarketBuyOrder(TradeInputValues& value, Orders& sellOrders)
 /**
  * match sell to buy market Order
  */
-bool TradeProcessor::MarketSellOrder(TradeInputValues& value, Orders& buyOrders)
+bool TradeProcessor::MarketSellOrder(TradeInputValues& value, Orders& buyOrders, tobRecord& tob)
 {
     for(auto it = buyOrders.begin(); it != buyOrders.end(); it++)
     {
         auto& buy = *it;
         if(buy.qty >= value.qty)
         {
+            if(buy.price == tob.first)
+            {
+                tob.first = 0; // reset TOB
+            }
             buy.qty -= value.qty;
             // T, userIdBuy, userOrderIdBuy, userIdSell, userOrderIdSell, price, quantity
             std::lock_guard l(output_mutex);
@@ -232,7 +249,7 @@ void TradeProcessor::writeTOB(const Orders& orders, const std::string& type, tob
  */
 bool TradeProcessor::execute(const TradeInputKeys& key, TradeInputValues& value)
 { 
-    std::lock_guard lock(mutex_);
+    std::lock_guard lock(mutex);
     if(value.price != 0 && key.type == "N") // limit
     {
         std::lock_guard l(output_mutex);
@@ -243,7 +260,7 @@ bool TradeProcessor::execute(const TradeInputKeys& key, TradeInputValues& value)
         if(key.side == "B")
         {
             // Try to match sell for the limit order
-            LimitBuyOrder(value, sellOrders);
+            LimitBuyOrder(value, sellOrders, tob_books[key.symbol]["B"s]);
             if(value.qty)
             {
                 buyOrders.emplace_back(value);
@@ -253,7 +270,7 @@ bool TradeProcessor::execute(const TradeInputKeys& key, TradeInputValues& value)
         else if(key.side == "S")
         {
             // Try to match sell for the limit order
-            LimitSellOrder(value, buyOrders);
+            LimitSellOrder(value, buyOrders, tob_books[key.symbol]["S"s]);
             if(value.qty)
             {
                 sellOrders.emplace_back(value);
@@ -275,15 +292,14 @@ bool TradeProcessor::execute(const TradeInputKeys& key, TradeInputValues& value)
         if(key.side == "B")
         {
             // match sell - earliest time first
-            MarketBuyOrder(value, sellOrders);
-            writeTOB(buyOrders, "B"s, tob_books[key.symbol]["B"s]);
-
+            MarketBuyOrder(value, sellOrders, tob_books[key.symbol]["S"s]);
+            writeTOB(buyOrders, "S"s, tob_books[key.symbol]["S"s]);
         }
         else if(key.side == "S")
         {
             // Try to match sell for the market order
-            MarketSellOrder(value, buyOrders);
-            writeTOB(sellOrders, "S"s, tob_books[key.symbol]["S"s]);
+            MarketSellOrder(value, buyOrders, tob_books[key.symbol]["B"s]);
+            writeTOB(sellOrders, "B"s, tob_books[key.symbol]["B"s]);
         }
         else
         {

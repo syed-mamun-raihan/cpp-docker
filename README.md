@@ -37,3 +37,4 @@ Todo:
     3. Add gtest or similar for unit testing
     4. use ‘-‘ for side elimination - not implemented yet. Need to be implemented
     5. Performance testing is needed
+    6. TOB implementation is incomplete as if a Trade is exucted maxPrice would be changed.

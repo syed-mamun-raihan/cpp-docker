@@ -64,8 +64,8 @@ private:
                                 if( scenarioId % 2 == 0)
                                 {
                                     scenerioFound = true;
-                                    //std::lock_guard l(processor.output_mutex);
-                                    //std::cout << "# name: scenario " << scenarioId << std::endl;
+                                    std::lock_guard l(processor.output_mutex);
+                                    std::cout << "#name: scenario " << scenarioId << std::endl;
                                 }
                                 else
                                 {
@@ -74,11 +74,11 @@ private:
                             }catch(std::exception& e)
                             {
                                 std::lock_guard l(processor.output_mutex);
-                                std::cout << line << std::endl;
-                                std::cout << " searchItemPos: " << searchItemPos << " searchItemLength " << searchItemLength << " lineLength " << lineLength << std::endl;
-                                std::cout << " scenarioIdStr " << scenarioIdStr << std::endl;
-                                std::cout << e.what();
-                                std::cout.flush();
+                                std::cerr << line << std::endl;
+                                std::cerr << " searchItemPos: " << searchItemPos << " searchItemLength " << searchItemLength << " lineLength " << lineLength << std::endl;
+                                std::cerr << " scenarioIdStr " << scenarioIdStr << std::endl;
+                                std::cerr << e.what();
+                                std::cerr.flush();
                             }
                         }
                         continue;
@@ -219,7 +219,7 @@ private:
         else
         {
             std::lock_guard l(processor.output_mutex);
-            std::cout << "# handleReceive|Error: " << error << ", Retrying\n";
+            std::cerr << "# handleReceive|Error: " << error << ", Retrying\n";
         }
         udpBuffer.fill('\0');
         startReceive();

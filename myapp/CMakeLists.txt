@@ -22,4 +22,4 @@ find_package(Boost 1.83.0)
 
 include_directories(${BOOST_INCLUDE_DIRS})
 
-ADD_EXECUTABLE(trader src/myapp.cpp src/TradeProcessor.cpp)
+ADD_EXECUTABLE(trader src/TraderApp.cpp src/TradeProcessor.cpp)

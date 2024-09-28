@@ -34,16 +34,28 @@ struct TradeInputValues
     }
 };
 
-class TraderProcessor
+class TradeProcessor
 {
     public:
-        TraderProcessor() = default;
+        TradeProcessor() = default;
         bool execute(const TradeInputKeys& key, TradeInputValues& value);
 
-    private:
         using Orders = std::vector<TradeInputValues>;
         using OrderBook = std::map<std::string /*B, S*/, Orders>;
-        std::unordered_map< std::string /*Symbol*/, OrderBook> books;
+        using Books = std::unordered_map< std::string /*Symbol*/, OrderBook>;
+
+    private:
+        bool LimitBuyOrder(TradeInputValues& value, Orders& sellOrders);
+        bool LimitSellOrder(TradeInputValues& value, Orders& buyOrders);
+
+        bool MarketBuyOrder(TradeInputValues& value, Orders& sellOrders);
+        bool MarketSellOrder(TradeInputValues& value, Orders& buyOrders);
+
+        bool ClearOrder(const TradeInputValues& value);
+        bool Flush();
+
+    private:
+        Books books;
         std::mutex mutex_;
 }; 
 

@@ -10,7 +10,8 @@ RUN apt-get -y update && \
         python3 \
         libboost-dev \
         netcat-traditional \
-        vim
+        vim \
+        gdb
 
 #copy application
 WORKDIR /myapp
@@ -21,6 +22,7 @@ COPY /myapp/CMakeLists.txt .
 WORKDIR /myapp/build
 RUN cmake .. 
 
+#dev environment is ready and we can run the following to build and edit our code
 #Now run cmake --build . --parallel 8
   
 EXPOSE 1234/udp

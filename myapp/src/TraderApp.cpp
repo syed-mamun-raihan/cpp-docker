@@ -24,12 +24,12 @@ namespace Trade{
 class TraderApp {
 public:
     TraderApp(boost::asio::io_service& io_service, std::size_t n_threads)
-        : _socket(io_service, udp::endpoint(udp::v4(), 1234))
+        : socket(io_service, udp::endpoint(udp::v4(), 1234))
     {
         std::cout << "# Worker threads count: " << n_threads << std::endl;
         for (std::size_t i = 0; i < n_threads; ++i)
         {
-            _threads.push_back(make_thread_handler());
+            threads.push_back(make_thread_handler());
         }
         startReceive();
     }
@@ -39,15 +39,53 @@ private:
     {
         return std::jthread{
             [this]{
+                bool scenerioFound = false;
                 while (true)
                 {
-                    auto const line = pop();
+                    auto line = pop();
                     line.erase(std::remove_if(line.begin(), line.end(), ::isspace), line.end());
-                    if(line.contains('#') || line.empty())
+                    if(line.empty())
                     {
                         continue;
                     }
- 
+                    
+                    if(line.contains('#'))
+                    {
+                        const auto searchItem = "name:scenario"s;
+                        if(line.contains(searchItem))
+                        {
+                            const auto searchItemPos = line.find(searchItem);
+                            const auto searchItemLength = searchItem.length();
+                            const auto lineLength = line.length();
+                            const auto scenarioIdStr = line.substr(searchItemPos+searchItemLength, lineLength-1);
+                            try{
+                                int scenarioId = stoi(scenarioIdStr);
+                                if( scenarioId % 2 == 0)
+                                {
+                                    scenerioFound = true;
+                                    std::lock_guard lock(output_mutex);
+                                    std::cout << "# name: scenario " << scenarioId << std::endl;
+                                }
+                                else
+                                {
+                                    scenerioFound = false;
+                                }
+                            }catch(std::exception& e)
+                            {
+                                std::lock_guard lock(output_mutex);
+                                std::cout << line << std::endl;
+                                std::cout << " searchItemPos: " << searchItemPos << " searchItemLength " << searchItemLength << " lineLength " << lineLength << std::endl;
+                                std::cout << " scenarioIdStr " << scenarioIdStr << std::endl;
+                                std::cout << e.what();
+                                std::cout.flush();
+                            }
+                        }
+                        continue;
+                    }
+
+                    if(!scenerioFound)
+                        continue;
+
                     TradeInputKeys key;
                     TradeInputValues value;
                     bool success = false;
@@ -140,7 +178,7 @@ private:
                     }
                     if(success)
                     {
-                        _processor.execute(key, value);
+                        processor.execute(key, value);
                     }
                 }
             } // end lambda
@@ -151,8 +189,8 @@ private:
      * Wait for trade requests
      */
     void startReceive() {
-        _socket.async_receive_from(
-            boost::asio::buffer(_recvBuffer), _remoteEndpoint,
+        socket.async_receive_from(
+            boost::asio::buffer(udpBuffer), remoteEndpoint,
             boost::bind(&TraderApp::handleReceive, this,
                 boost::asio::placeholders::error,
                 boost::asio::placeholders::bytes_transferred));
@@ -169,7 +207,7 @@ private:
             // Parse data
             if(bytes_transferred)
             {
-                std::istringstream iss(_recvBuffer.data());
+                std::istringstream iss(udpBuffer.data());
                 for (std::string line; std::getline(iss, line);)
                 {
                     push(line);
@@ -180,7 +218,7 @@ private:
         {
             std::cout << "# handleReceive|Error: " << error << ", Retrying\n";
         }
-        _recvBuffer.fill('\0');
+        udpBuffer.fill('\0');
         startReceive();
     }
 
@@ -189,9 +227,9 @@ private:
      */
     void push(std::string const& val)
     {
-        std::lock_guard<std::mutex> queue_lock{_queue_mutex};
-        _queue.push(val);
-        _queue_cv.notify_one();
+        std::lock_guard<std::mutex> queue_lock{queue_mutex};
+        strQueue.push(val);
+        queue_cv.notify_one();
     }
 
     /**
@@ -199,10 +237,10 @@ private:
      */
     std::string pop()
     {
-        std::unique_lock<std::mutex> queue_lock{_queue_mutex};
-        _queue_cv.wait(queue_lock, [&]{ return !_queue.empty(); });
-        auto ret = _queue.front();
-        _queue.pop();
+        std::unique_lock<std::mutex> queue_lock{queue_mutex};
+        queue_cv.wait(queue_lock, [&]{ return !strQueue.empty(); });
+        auto ret = strQueue.front();
+        strQueue.pop();
         return ret;
     }
 
@@ -210,39 +248,40 @@ private:
     /**
      * Store incoming requests
      */
-    std::queue<std::string> _queue;
+    std::queue<std::string> strQueue;
 
     /**
      * For activating worker threads
      */
-    std::condition_variable _queue_cv;
+    std::condition_variable queue_cv;
 
     /**
      * Protect incoming trades in queue
      */
-    std::mutex _queue_mutex;
+    std::mutex queue_mutex;
 
     /**
      * Worker Threads
      */
-    std::vector<std::jthread> _threads;
+    std::vector<std::jthread> threads;
 
     /**
      * network socket to receive trades
      */
-    udp::socket _socket;
+    udp::socket socket;
 
     /**
      * For handling incoming network connections
      */
-    udp::endpoint _remoteEndpoint;
+    udp::endpoint remoteEndpoint;
 
     /**
      * Recieve Buffer
      */
-    std::array<char, 16384> _recvBuffer;
+    std::array<char, 16384> udpBuffer;
 
-    TraderProcessor _processor;
+    TradeProcessor processor;
+    std::mutex output_mutex;
 };
 } // end namespace
 

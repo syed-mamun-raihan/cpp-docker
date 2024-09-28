@@ -26,6 +26,7 @@ public:
     TraderApp(boost::asio::io_service& io_service, std::size_t n_threads)
         : socket(io_service, udp::endpoint(udp::v4(), 1234))
     {
+        std::lock_guard l(processor.output_mutex);
         std::cout << "# Worker threads count: " << n_threads << std::endl;
         for (std::size_t i = 0; i < n_threads; ++i)
         {
@@ -63,7 +64,7 @@ private:
                                 if( scenarioId % 2 == 0)
                                 {
                                     scenerioFound = true;
-                                    std::lock_guard lock(output_mutex);
+                                    std::lock_guard l(processor.output_mutex);
                                     std::cout << "# name: scenario " << scenarioId << std::endl;
                                 }
                                 else
@@ -72,7 +73,7 @@ private:
                                 }
                             }catch(std::exception& e)
                             {
-                                std::lock_guard lock(output_mutex);
+                                std::lock_guard l(processor.output_mutex);
                                 std::cout << line << std::endl;
                                 std::cout << " searchItemPos: " << searchItemPos << " searchItemLength " << searchItemLength << " lineLength " << lineLength << std::endl;
                                 std::cout << " scenarioIdStr " << scenarioIdStr << std::endl;
@@ -203,6 +204,7 @@ private:
                        std::size_t bytes_transferred) {
         if (!error || error == boost::asio::error::message_size) 
         {
+            std::lock_guard l(processor.output_mutex);
             std::cout << "# Got UDP data\n";
             // Parse data
             if(bytes_transferred)
@@ -216,6 +218,7 @@ private:
         }
         else
         {
+            std::lock_guard l(processor.output_mutex);
             std::cout << "# handleReceive|Error: " << error << ", Retrying\n";
         }
         udpBuffer.fill('\0');
@@ -281,7 +284,6 @@ private:
     std::array<char, 16384> udpBuffer;
 
     TradeProcessor processor;
-    std::mutex output_mutex;
 };
 } // end namespace
 

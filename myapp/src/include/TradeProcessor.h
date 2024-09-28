@@ -44,6 +44,11 @@ class TradeProcessor
         using OrderBook = std::map<std::string /*B, S*/, Orders>;
         using Books = std::unordered_map< std::string /*Symbol*/, OrderBook>;
 
+        using tobRecord = std::pair<int /*price*/, int /*qty*/>;
+        using tobBook = std::map<std::string /*B, S*/, tobRecord>;
+        using tobBooks = std::unordered_map< std::string /*Symbol*/, tobBook>;
+        std::recursive_mutex output_mutex;
+
     private:
         bool LimitBuyOrder(TradeInputValues& value, Orders& sellOrders);
         bool LimitSellOrder(TradeInputValues& value, Orders& buyOrders);
@@ -54,8 +59,11 @@ class TradeProcessor
         bool ClearOrder(const TradeInputValues& value);
         bool Flush();
 
+        void writeTOB(const Orders& order, const std::string& type, tobRecord& tob);
+
     private:
         Books books;
+        tobBooks tob_books;
         std::mutex mutex_;
 }; 
 

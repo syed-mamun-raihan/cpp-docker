@@ -26,8 +26,8 @@ public:
     TraderApp(boost::asio::io_service& io_service, std::size_t n_threads)
         : socket(io_service, udp::endpoint(udp::v4(), 1234))
     {
-        std::lock_guard l(processor.output_mutex);
-        std::cout << "# Worker threads count: " << n_threads << std::endl;
+        //std::lock_guard l(processor.output_mutex);
+        //std::cout << "# Worker threads count: " << n_threads << std::endl;
         for (std::size_t i = 0; i < n_threads; ++i)
         {
             threads.push_back(make_thread_handler());
@@ -64,8 +64,8 @@ private:
                                 if( scenarioId % 2 == 0)
                                 {
                                     scenerioFound = true;
-                                    std::lock_guard l(processor.output_mutex);
-                                    std::cout << "# name: scenario " << scenarioId << std::endl;
+                                    //std::lock_guard l(processor.output_mutex);
+                                    //std::cout << "# name: scenario " << scenarioId << std::endl;
                                 }
                                 else
                                 {
@@ -204,8 +204,8 @@ private:
                        std::size_t bytes_transferred) {
         if (!error || error == boost::asio::error::message_size) 
         {
-            std::lock_guard l(processor.output_mutex);
-            std::cout << "# Got UDP data\n";
+        //    std::lock_guard l(processor.output_mutex);
+        //    std::cout << "# Got UDP data\n";
             // Parse data
             if(bytes_transferred)
             {
@@ -291,7 +291,7 @@ int main()
 {
    try {
         boost::asio::io_service io_service;
-        Trade::TraderApp server{io_service, 4};
+        Trade::TraderApp server{io_service, 1};
         io_service.run();
     } catch (const std::exception& ex) {
         std::cerr << ex.what() << std::endl;

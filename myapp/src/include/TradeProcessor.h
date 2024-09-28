@@ -6,6 +6,7 @@ using std::operator""s;
 
 namespace Trade{
     
+/// @brief captures Trade keys
 struct TradeInputKeys
 {
     std::string type; // N,C,F
@@ -19,6 +20,7 @@ struct TradeInputKeys
     }
  };
 
+/// @brief Captures Trade Values
 struct TradeInputValues
 {
     int         userId = 0;
@@ -34,6 +36,7 @@ struct TradeInputValues
     }
 };
 
+/// @brief Implements trade processing functionalities
 class TradeProcessor
 {
     public:

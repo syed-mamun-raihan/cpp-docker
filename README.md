@@ -29,10 +29,11 @@ Dev environment:
 Run:
     1. Run <cmake --build .> from build folder
     2. Output is /myapp/build/trader
-    3. Run /myapp/build/trader odd|even|all
+    3. Run /myapp/build/trader > output.csv
 
 Todo:
     1. Consider abstraction of order execution
-    2. Compute top of book calculation 
-    3. Add doxygen document generation
-    4. Add gtest or similar for unit testing
+    2. Add doxygen document generation
+    3. Add gtest or similar for unit testing
+    4. use ‘-‘ for side elimination - not implemented yet. Need to be implemented
+    5. Performance testing is needed

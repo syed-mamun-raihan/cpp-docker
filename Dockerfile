@@ -1,26 +1,27 @@
 # Build Stage
 # First pull Golang image
-FROM amd64/ubuntu:24.10 as build-docker
+FROM amd64/ubuntu:24.04 AS traderapp
 
 #install tools 
-RUN apt-get update && \
-    apt-get install  \
+RUN apt-get -y update && \
+    apt-get -y install  \
         build-essential \
         cmake \
         python3 \
         libboost-dev \
         netcat-traditional \
+        vim
 
 #copy application
-WORKDIR ./myapp
-COPY src/ ./src/
-COPY CMakeLists.txt .
+WORKDIR /myapp
+COPY /myapp/src/ ./src/
+COPY /myapp/CMakeLists.txt .
  
-# Budild application
-WORKDIR ./myapp/build
+# Budild application makefiles
+WORKDIR /myapp/build
+RUN cmake .. 
 
-RUN cmake -DCMAKE_BUILD_TYPE=Release .. && \
-    cmake --build . --parallel 8
+#Now run cmake --build . --parallel 8
   
-# Start app
-ENTRYPOINT [ "./myapp/build/src/myapp" ]
+EXPOSE 1234/udp
+CMD ["/bin/bash"]

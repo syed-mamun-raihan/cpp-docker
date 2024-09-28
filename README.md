@@ -16,8 +16,11 @@ Design:
     The main udp server TradeApp has io_service loop to handle all inputs.
     It employes worker Thread for outputs.
     It uses mutexes to push input requests.
+
     Output threads pick input requests and parses and then process using TradeProcessor.
     It uses mutexes to synchronize operations in the output threads
+
+    Currently it has 1 input threads and 1 output threads. 
 
 Dev environment:    
     1. Run docker_build.sh

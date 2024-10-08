@@ -13,5 +13,5 @@ services:
       source: /var/run/docker.sock
       target: /var/run/docker.sock
     - type: bind
-      source: ./myapp/src
-      target: /myapp/src
+      source: ./tradeapp
+      target: /tradeapp

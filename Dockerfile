@@ -1,6 +1,6 @@
 # Build Stage
 # First pull Golang image
-FROM amd64/ubuntu:24.04 AS traderapp
+FROM amd64/ubuntu:24.10 AS traderapp
 
 #install tools 
 RUN apt-get -y update && \
@@ -11,15 +11,16 @@ RUN apt-get -y update && \
         libboost-dev \
         netcat-traditional \
         vim \
-        gdb
+        gdb \
+        cgdb \
+        golang 
 
 #copy application
-WORKDIR /myapp
-COPY /myapp/src/ ./src/
-COPY /myapp/CMakeLists.txt .
+WORKDIR /
+COPY / ./
  
 # Budild application makefiles
-WORKDIR /myapp/build
+WORKDIR /tradeapp/build
 RUN cmake .. 
 
 #dev environment is ready and we can run the following to build and edit our code

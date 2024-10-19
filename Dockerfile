@@ -13,7 +13,7 @@ RUN apt-get -y update && \
         vim \
         gdb \
         cgdb \
-        golang 
+	git
 
 #copy application
 WORKDIR /

@@ -1,4 +1,4 @@
-# Kraken-Task
+Sample Docker Project for CPP
 
 Project Structure:
     /Dockerfile

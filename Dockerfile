@@ -13,7 +13,11 @@ RUN apt-get -y update && \
         vim \
         gdb \
         cgdb \
-	git
+        cpplint \
+        clang-format \
+        pre-commit \
+        doxygen \
+	    git
 
 #copy application
 WORKDIR /

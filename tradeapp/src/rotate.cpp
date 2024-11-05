@@ -1,9 +1,16 @@
 #include <iostream>     // std::cout
 #include <algorithm>    // std::rotate_copy
 #include <vector>       // std::vector
+// variant example
+#include <iomanip>
+#include <iostream>
+#include <string>
+#include <type_traits>
+#include <variant>
+#include <vector>
 
 template <class ForwardIterator>
-  void rotate (ForwardIterator first, ForwardIterator middle,
+void rotate (ForwardIterator first, ForwardIterator middle,
                ForwardIterator last)
 {
   ForwardIterator next = middle;
@@ -67,3 +74,34 @@ class LRUCache{
     cache_db db;
     std::multimap<time_t, int> LRUstates;
 };
+
+
+ 
+// the variant to visit
+using var_t = std::variant<int, long, double, std::string>;
+ 
+// helper type for the visitor #4
+template<class... Ts>
+struct overload : Ts... 
+{ 
+    using Ts::operator()...; 
+};
+
+int main()
+{
+    std::vector<var_t> vec = {10, 15l, 1.5, "hello"};
+    for (auto& v: vec)
+    {
+        // 4. another type-matching visitor: a class with 3 overloaded operator()'s
+        // Note: The `(auto arg)` template operator() will bind to `int` and `long`
+        //       in this case, but in its absence the `(double arg)` operator()
+        //       *will also* bind to `int` and `long` because both are implicitly
+        //       convertible to double. When using this form, care has to be taken
+        //       that implicit conversions are handled correctly.
+        std::visit(overload {
+            [](auto arg) { std::cout << arg << ' '; },
+            [](double arg) { std::cout << std::fixed << arg << ' '; },
+            [](const std::string& arg) { std::cout << std::quoted(arg) << ' '; }
+        }, v);
+    }
+}

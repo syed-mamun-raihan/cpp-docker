@@ -17,7 +17,8 @@ RUN apt-get -y update && \
         clang-format \
         pre-commit \
         doxygen \
-	    git
+	    git \
+        catch2
 
 #copy application
 WORKDIR /

@@ -5,6 +5,16 @@
 #define CATCH_CONFIG_MAIN
 #include <catch2/catch.hpp>
 
+auto sum_integers = [](auto& vec)
+{
+  long sum = 0;
+  for(auto i : vec)
+  {
+    sum += i;
+  }
+  return sum;
+};
+
 TEST_CASE("Sum of integers for a short vector", "[short]") {
   auto integers = {1, 2, 3, 4, 5};
   REQUIRE(sum_integers(integers) == 15);

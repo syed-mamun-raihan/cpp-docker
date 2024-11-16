@@ -8,6 +8,18 @@
 
 using std::operator""s;
 
+auto trim = [](const std::string_view& str,
+                 const std::string& whitespace = " \t") -> std::string
+{
+    const auto strBegin = str.find_first_not_of(whitespace);
+    if (strBegin == std::string::npos)
+        return ""; // no content
+
+    const auto strEnd = str.find_last_not_of(whitespace);
+    const auto strRange = strEnd - strBegin + 1;
+
+    return std::ranges::to<std::string>(str.substr(strBegin, strRange));
+};
 
 ///////
 using boost::asio::ip::udp;
@@ -26,11 +38,9 @@ public:
     TraderApp(boost::asio::io_service& io_service, std::size_t n_threads)
         : socket(io_service, udp::endpoint(udp::v4(), 1234))
     {
-        //std::lock_guard l(processor.output_mutex);
-        //std::cout << "# Worker threads count: " << n_threads << std::endl;
         for (std::size_t i = 0; i < n_threads; ++i)
         {
-            threads.push_back(make_thread_handler());
+            threads.emplace_back(make_thread_handler());
         }
         startReceive();
     }
@@ -39,12 +49,11 @@ private:
     std::jthread make_thread_handler()
     {
         return std::jthread{
-            [this]{
+            [this](std::stop_token stoken){
                 bool scenerioFound = false;
-                while (true)
+                while (!stoken.stop_requested())
                 {
-                    auto line = pop();
-                    line.erase(std::remove_if(line.begin(), line.end(), ::isspace), line.end());
+                    std::string line = trim(pop());
                     if(line.empty())
                     {
                         continue;
@@ -64,8 +73,8 @@ private:
                                 if( scenarioId % 2 == 0)
                                 {
                                     scenerioFound = true;
-                                    std::lock_guard l(processor.output_mutex);
-                                    std::cout << "#name: scenario " << scenarioId << std::endl;
+                                    std::osyncstream out(std::cout);
+                                    out << "#name: scenario " << scenarioId << std::endl;
                                 }
                                 else
                                 {
@@ -73,12 +82,12 @@ private:
                                 }
                             }catch(std::exception& e)
                             {
-                                std::lock_guard l(processor.output_mutex);
-                                std::cerr << line << std::endl;
-                                std::cerr << " searchItemPos: " << searchItemPos << " searchItemLength " << searchItemLength << " lineLength " << lineLength << std::endl;
-                                std::cerr << " scenarioIdStr " << scenarioIdStr << std::endl;
-                                std::cerr << e.what();
-                                std::cerr.flush();
+                                std::osyncstream out(std::cerr);
+                                out << line << std::endl;
+                                out << " searchItemPos: " << searchItemPos << " searchItemLength " << searchItemLength << " lineLength " << lineLength << std::endl;
+                                out << " scenarioIdStr " << scenarioIdStr << std::endl;
+                                out << e.what();
+                                out.flush();
                             }
                         }
                         continue;
@@ -93,7 +102,7 @@ private:
                     std::istringstream iss(line);
                     for (std::string word; std::getline(iss, word, ',');)
                     {
-                        word.erase(std::remove_if(word.begin(), word.end(), ::isspace), word.end());
+                        word = trim(word);
                         if(key.type.empty()) // Order Type
                         {
                             if(word == "N" || word == "C" || word == "F")
@@ -218,19 +227,19 @@ private:
         }
         else
         {
-            std::lock_guard l(processor.output_mutex);
-            std::cerr << "# handleReceive|Error: " << error << ", Retrying\n";
+            std::osyncstream out(std::cerr);
+            out << "# handleReceive|Error: " << error << ", Retrying\n";
         }
         udpBuffer.fill('\0');
         startReceive();
     }
-
+    
     /**
      * Save incoming requests
      */
     void push(std::string const& val)
     {
-        std::lock_guard<std::mutex> queue_lock{queue_mutex};
+        std::lock_guard queue_lock{queue_mutex};
         strQueue.push(val);
         queue_cv.notify_one();
     }
@@ -256,7 +265,7 @@ private:
     /**
      * For activating worker threads
      */
-    std::condition_variable queue_cv;
+    std::condition_variable_any queue_cv;
 
     /**
      * Protect incoming trades in queue

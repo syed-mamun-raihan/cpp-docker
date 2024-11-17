@@ -1,1 +1,0 @@
-/usr/bin/c++ CMakeFiles/trader.dir/src/TraderApp.cpp.o CMakeFiles/trader.dir/src/TradeProcessor.cpp.o -o trader

@@ -1,3 +1,0 @@
-/tradeapp/build/CMakeFiles/trader.dir
-/tradeapp/build/CMakeFiles/edit_cache.dir
-/tradeapp/build/CMakeFiles/rebuild_cache.dir

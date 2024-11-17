@@ -20,7 +20,7 @@ endif()
 
 message("BOOST_ROOT is ${BOOST_ROOT}")
 
-find_package(Boost 1.83.0)
+find_package(Boost 1.86.0)
 
 include_directories(${BOOST_INCLUDE_DIRS})
 

@@ -114,5 +114,6 @@
         "text_encoding": "cpp",
         "thread": "cpp",
         "filesystem": "cpp"
-    }
+    },
+    "editor.fontSize": 16
 }

@@ -4,10 +4,10 @@ using namespace std;
 
 template<typename T=int>
 struct Node {
-    T val;
-    Node<T>* left;
-    Node<T>* right;
-
+    T val = T();
+    Node<T>* left = nullptr;
+    Node<T>* right = nullptr;
+    
     explicit Node(T val, Node<T>* left = nullptr, Node<T>* right = nullptr)
         : val{val}, left{left}, right{right} {}
 
@@ -151,6 +151,102 @@ vector<vector<int>> level_order_traversal(Node<int>* root) {
         res.emplace_back(new_level);
     }
     return res;
+}
+
+// level traversal zig zag
+vector<vector<int>> zig_zag_traversal(Node<int>* root) {
+    vector<vector<int>> res;
+    if (root == nullptr) return res;
+    queue<Node<int>*> level;
+    level.push(root);
+    bool left_to_right = true;
+    while (!level.empty()) {
+        int n = level.size();
+        list<int> new_level;
+        for (int i = 0; i < n; i++) {
+            Node<int>* node = level.front();
+            if (left_to_right) {
+                new_level.emplace_back(node->val);
+            } else {
+                new_level.emplace_front(node->val);
+            }
+            if(node->left) level.push(node->left);
+            if(node->right) level.push(node->right);
+            level.pop();
+        }
+        res.emplace_back(new_level.begin(), new_level.end());
+        left_to_right = !left_to_right; // flip flag
+    }
+    return res;
+}
+// right side view
+vector<int> binary_tree_right_side_view(Node<int>* root) {
+    vector<int> res;
+    if (root == nullptr) return res;
+    queue<Node<int>*> level;
+    level.push(root);
+    while (!level.empty()) {
+        int n = level.size();
+        // only append the first node we encounter since it's the rightmost
+        res.emplace_back(level.front()->val);
+        for (int i = 0; i < n; i++) {
+            Node<int>* node = level.front();
+            if (node->right) level.push(node->right);
+            if (node->left) level.push(node->left);
+            level.pop();
+        }
+    }
+    return res;
+}
+
+// binary tree minimum depth
+int binary_tree_min_depth(Node<int>* root) {
+    queue<Node<int>*> level;
+    int depth = -1; // start from -1 because popping root will add 1 depth
+    level.push(root);
+    while (!level.empty()) {
+        depth++;
+        int n = level.size();
+        for (int i = 0; i < n; i++) {
+            Node<int>* node = level.front();
+            if (node->left == nullptr && node->right == nullptr) {
+                return depth; // found leaf node, early return
+            }
+            if (node->left) level.push(node->left);
+            if (node->right) level.push(node->right);
+            level.pop();
+        }
+    }
+    return depth;
+}
+// Shortest Path First
+// BFS template
+int bfs(std::vector<std::vector<int>>& graph, int root, int target) {
+    std::queue<int> q;
+    q.push(root);
+    std::unordered_set<int> visited;
+    visited.emplace(root);
+    int level = 0;
+    while (!q.empty()) {
+        int n = q.size();
+        for (int i = 0; i < n; i++) {
+            int node = q.front();
+            if (node == target) return level;
+            for (int neighbor : graph[node]) {
+                if (visited.count(neighbor)) continue;
+                q.push(neighbor);
+                visited.emplace(neighbor);
+            }
+            q.pop();
+        }
+        // increment level after we have processed all nodes of the level
+        level++;
+    }
+    return level;
+}
+
+int shortest_path(std::vector<std::vector<int>>& graph, int a, int b) {
+    return bfs(graph, a, b);
 }
 
 int main(int , char** )

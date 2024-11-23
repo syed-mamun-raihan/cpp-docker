@@ -51,13 +51,9 @@ private:
         return std::jthread{
             [this](std::stop_token stoken){
                 bool scenerioFound = false;
-                while (!stoken.stop_requested())
-                {
-                    std::string line = trim(pop());
-                    if(line.empty())
-                    {
-                        continue;
-                    }
+                for (std::string line = trim(pop()); !stoken.stop_requested();)
+                {                    
+                    if(line.empty()) continue;
                     
                     if(line.contains('#'))
                     {
@@ -213,8 +209,8 @@ private:
                        std::size_t bytes_transferred) {
         if (!error || error == boost::asio::error::message_size) 
         {
-        //    std::lock_guard l(processor.output_mutex);
-        //    std::cout << "# Got UDP data\n";
+            std::osyncstream out(std::cerr);
+            out << "# Got UDP data\n";
             // Parse data
             if(bytes_transferred)
             {
@@ -230,7 +226,7 @@ private:
             std::osyncstream out(std::cerr);
             out << "# handleReceive|Error: " << error << ", Retrying\n";
         }
-        udpBuffer.fill('\0');
+        udpBuffer.clear();
         startReceive();
     }
     
@@ -303,7 +299,8 @@ int main()
         Trade::TraderApp server{io_service, 1};
         io_service.run();
     } catch (const std::exception& ex) {
-        std::cerr << ex.what() << std::endl;
+        std::osyncstream out(std::cerr)
+        out << ex.what() << std::endl;
     }
  
     return 0; 

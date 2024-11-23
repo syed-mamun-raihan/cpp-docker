@@ -7,7 +7,7 @@ using namespace Trade;
  */
 bool TradeProcessor::LimitBuyOrder(TradeInputValues& value, Orders& sellOrders, tobRecord& tob)
 {
-    for(auto it = sellOrders.begin(); it != sellOrders.end(); it++)
+    for(auto it = sellOrders.begin(); it != sellOrders.end(); )
     {
         auto& sell = *it;
         if(sell.price == value.price)
@@ -21,8 +21,8 @@ bool TradeProcessor::LimitBuyOrder(TradeInputValues& value, Orders& sellOrders, 
             {
                 sell.qty -= value.qty;
                 // T, userIdBuy, userOrderIdBuy, userIdSell, userOrderIdSell, price, quantity
-                std::lock_guard l(output_mutex);
-                std::cout << "T, " << value.userId <<", " << value.userOrderId << ", " << sell.userId << ", " << sell.userOrderId << ", " << sell.price << ", " << value.qty << std::endl;
+                std::osyncstream out(std::cout);
+                out << "T, " << value.userId <<", " << value.userOrderId << ", " << sell.userId << ", " << sell.userOrderId << ", " << sell.price << ", " << value.qty << std::endl;
                 if(sell.qty == 0)
                 {
                     it = sellOrders.erase(it);
@@ -34,10 +34,14 @@ bool TradeProcessor::LimitBuyOrder(TradeInputValues& value, Orders& sellOrders, 
             {
                 value.qty -= sell.qty;
                 // T, userIdBuy, userOrderIdBuy, userIdSell, userOrderIdSell, price, quantity
-                std::lock_guard l(output_mutex);
-                std::cout << "T, " << value.userId <<", " << value.userOrderId << ", " << sell.userId << ", " << sell.userOrderId << ", " << sell.price << ", " << sell.qty << std::endl;
+                std::osyncstream out(std::cout);
+                out << "T, " << value.userId <<", " << value.userOrderId << ", " << sell.userId << ", " << sell.userOrderId << ", " << sell.price << ", " << sell.qty << std::endl;
                 it = sellOrders.erase(it);
             } 
+        }
+        else
+        {
+            it++;
         }
     } 
     return true;
@@ -48,7 +52,7 @@ bool TradeProcessor::LimitBuyOrder(TradeInputValues& value, Orders& sellOrders, 
  */
 bool TradeProcessor::LimitSellOrder(TradeInputValues& value, Orders& buyOrders, tobRecord& tob)
 {
-    for(auto it = buyOrders.begin(); it != buyOrders.end(); it++)
+    for(auto it = buyOrders.begin(); it != buyOrders.end(); )
     {
         auto& buy = *it;
         if(buy.price == value.price)
@@ -61,8 +65,8 @@ bool TradeProcessor::LimitSellOrder(TradeInputValues& value, Orders& buyOrders, 
             {
                 buy.qty -= value.qty;
                 // T, userIdBuy, userOrderIdBuy, userIdSell, userOrderIdSell, price, quantity
-                std::lock_guard l(output_mutex);
-                std::cout << "T, " << buy.userId <<", " << buy.userOrderId << ", " << value.userId << ", " << value.userOrderId << ", " << buy.price << ", " << value.qty << std::endl;
+                std::osyncstream out(std::cout);
+                out << "T, " << buy.userId <<", " << buy.userOrderId << ", " << value.userId << ", " << value.userOrderId << ", " << buy.price << ", " << value.qty << std::endl;
                 if(buy.qty == 0)
                 {
                     it = buyOrders.erase(it);
@@ -74,10 +78,14 @@ bool TradeProcessor::LimitSellOrder(TradeInputValues& value, Orders& buyOrders, 
             {
                 value.qty -= buy.qty;
                 // T, userIdBuy, userOrderIdBuy, userIdSell, userOrderIdSell, price, quantity
-                std::lock_guard l(output_mutex);
-                std::cout << "T, " << buy.userId <<", " << buy.userOrderId << ", " << value.userId << ", " << value.userOrderId << ", " << buy.price << ", " << buy.qty << std::endl;
+                std::osyncstream out(std::cout);
+                out << "T, " << buy.userId <<", " << buy.userOrderId << ", " << value.userId << ", " << value.userOrderId << ", " << buy.price << ", " << buy.qty << std::endl;
                 it = buyOrders.erase(it);
             } 
+        }
+        else
+        {
+            it++;
         }
     }
     return true;
@@ -88,7 +96,7 @@ bool TradeProcessor::LimitSellOrder(TradeInputValues& value, Orders& buyOrders, 
  */
 bool TradeProcessor::MarketBuyOrder(TradeInputValues& value, Orders& sellOrders, tobRecord& tob)
 {
-    for(auto it = sellOrders.begin(); it != sellOrders.end(); it++)
+    for(auto it = sellOrders.begin(); it != sellOrders.end(); )
     {
         auto& sell = *it;
         if(sell.qty >= value.qty)
@@ -99,8 +107,8 @@ bool TradeProcessor::MarketBuyOrder(TradeInputValues& value, Orders& sellOrders,
             }
             sell.qty -= value.qty;
             // T, userIdBuy, userOrderIdBuy, userIdSell, userOrderIdSell, price, quantity
-            std::lock_guard l(output_mutex);
-            std::cout << "T, " << value.userId <<", " << value.userOrderId << ", " << sell.userId << ", " << sell.userOrderId << ", " << sell.price << ", " << value.qty << std::endl;
+            std::osyncstream out(std::cout);
+            out << "T, " << value.userId <<", " << value.userOrderId << ", " << sell.userId << ", " << sell.userOrderId << ", " << sell.price << ", " << value.qty << std::endl;
             if(sell.qty == 0)
             {
                 it = sellOrders.erase(it);
@@ -111,8 +119,8 @@ bool TradeProcessor::MarketBuyOrder(TradeInputValues& value, Orders& sellOrders,
         {
             value.qty -= sell.qty;
             // T, userIdBuy, userOrderIdBuy, userIdSell, userOrderIdSell, price, quantity
-            std::lock_guard l(output_mutex);
-            std::cout << "T, " << value.userId <<", " << value.userOrderId << ", " << sell.userId << ", " << sell.userOrderId << ", " << sell.price << ", " << sell.qty << std::endl;
+            std::osyncstream out(std::cout);
+            out << "T, " << value.userId <<", " << value.userOrderId << ", " << sell.userId << ", " << sell.userOrderId << ", " << sell.price << ", " << sell.qty << std::endl;
             it = sellOrders.erase(it);
         }
     }
@@ -135,8 +143,8 @@ bool TradeProcessor::MarketSellOrder(TradeInputValues& value, Orders& buyOrders,
             }
             buy.qty -= value.qty;
             // T, userIdBuy, userOrderIdBuy, userIdSell, userOrderIdSell, price, quantity
-            std::lock_guard l(output_mutex);
-            std::cout << "T, " << buy.userId <<", " << buy.userOrderId << ", " << value.userId << ", " << value.userOrderId << ", " << buy.price << ", " << value.qty << std::endl;
+            std::osyncstream out(std::cout);
+            out << "T, " << buy.userId <<", " << buy.userOrderId << ", " << value.userId << ", " << value.userOrderId << ", " << buy.price << ", " << value.qty << std::endl;
             if(buy.qty == 0)
             {
                 it = buyOrders.erase(it);
@@ -147,8 +155,8 @@ bool TradeProcessor::MarketSellOrder(TradeInputValues& value, Orders& buyOrders,
         {
             value.qty -= buy.qty;
             // T, userIdBuy, userOrderIdBuy, userIdSell, userOrderIdSell, price, quantity
-            std::lock_guard l(output_mutex);
-            std::cout << "T, " << buy.userId <<", " << buy.userOrderId << ", " << value.userId << ", " << value.userOrderId << ", " << buy.price << ", " << buy.qty << std::endl;
+            std::osyncstream out(std::cout);
+            out << "T, " << buy.userId <<", " << buy.userOrderId << ", " << value.userId << ", " << value.userOrderId << ", " << buy.price << ", " << buy.qty << std::endl;
             it = buyOrders.erase(it);
         } 
     }
@@ -180,8 +188,8 @@ bool TradeProcessor::ClearOrder(const TradeInputValues& value)
     }
     if(cleared)
     {
-        std::lock_guard l(output_mutex);
-        std::cout << "C, " << value.userId <<", " << value.userOrderId << "\n";
+        std::osyncstream out(std::cout);
+        out << "C, " << value.userId <<", " << value.userOrderId << "\n";
     }
     return true; 
 }
@@ -195,9 +203,10 @@ bool TradeProcessor::Flush()
     {
         auto& buyOrders = book["B"s];
         auto& sellOrders = book["S"s];
-        for(auto itSell = sellOrders.begin(); itSell != sellOrders.end(); itSell++)
+        for(auto itSell = sellOrders.begin(); itSell != sellOrders.end(); )
         {
-            for(auto itBuy = buyOrders.begin(); itBuy != buyOrders.end(); itBuy++)
+            bool changeIt = true;
+            for(auto itBuy = buyOrders.begin(); itBuy != buyOrders.end(); )
             {
                 if(itSell->price == itBuy->price) 
                 {
@@ -205,20 +214,25 @@ bool TradeProcessor::Flush()
                     {
                         itSell->qty -= itBuy->qty;
                     // T, userIdBuy, userOrderIdBuy, userIdSell, userOrderIdSell, price, quantity
-                        std::lock_guard l(output_mutex);
-                        std::cout << "T, " << itBuy->userId <<", " << itBuy->userOrderId << ", " << itSell->userId << ", " << itSell->userOrderId << ", " << itSell->price << ", " << itBuy->qty << std::endl;
+                        sstd::osyncstream out(std::cout);
+                        out << "T, " << itBuy->userId <<", " << itBuy->userOrderId << ", " << itSell->userId << ", " << itSell->userOrderId << ", " << itSell->price << ", " << itBuy->qty << std::endl;
                         itBuy = buyOrders.erase(itBuy);
                     }
                     else
                     {
                         itBuy->qty -= itSell->qty;
                 // T, userIdBuy, userOrderIdBuy, userIdSell, userOrderIdSell, price, quantity
-                        std::lock_guard l(output_mutex);
-                        std::cout << "T, " << itBuy->userId <<", " << itBuy->userOrderId << ", " << itSell->userId << ", " << itSell->userOrderId << ", " << itSell->price << ", " << itSell->qty << std::endl;
+                        std::osyncstream out(std::cout);
+                        out << "T, " << itBuy->userId <<", " << itBuy->userOrderId << ", " << itSell->userId << ", " << itSell->userOrderId << ", " << itSell->price << ", " << itSell->qty << std::endl;
                         itSell = buyOrders.erase(itSell);
+                        changeIt = false;
                     }
                 }
+                else{
+                    itBuy++
+                }
             }
+            if(changeIt) itSell++;
         }
     }
     return false; // dont compute tob for all books

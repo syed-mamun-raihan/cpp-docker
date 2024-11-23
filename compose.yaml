@@ -1,5 +1,5 @@
 services:
-  traderapp:
+  apps:
     build:
       context: .
       dockerfile: Dockerfile
@@ -13,5 +13,5 @@ services:
       source: /var/run/docker.sock
       target: /var/run/docker.sock
     - type: bind
-      source: ./tradeapp
-      target: /tradeapp
+      source: ./apps
+      target: /apps

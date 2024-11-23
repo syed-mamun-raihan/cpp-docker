@@ -1,6 +1,6 @@
 # Build Stage
 # First pull Golang image
-FROM amd64/ubuntu:24.10 AS traderapp
+FROM amd64/ubuntu:24.10 AS apps
 
 #install tools 
 RUN apt-get -y update && \
@@ -18,14 +18,16 @@ RUN apt-get -y update && \
         pre-commit \
         doxygen \
 	    git \
-        catch2
+        catch2 \
+        openjdk-21-jdk \
+        golang-go
 
 #copy application
 WORKDIR /
 COPY / ./
  
 # Budild application makefiles
-WORKDIR /tradeapp/build
+WORKDIR /apps/build
 RUN cmake .. 
 
 #dev environment is ready and we can run the following to build and edit our code

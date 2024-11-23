@@ -21,7 +21,7 @@ struct Node {
         delete right;
     }
 };
-//-----------
+//make palindrome
 bool isPalindrome(const string& str)
 {
     for(int i=0; i <str.size(); i++)
@@ -120,7 +120,45 @@ Node<int>* invert_binary_tree(Node<int>* tree) {
     invert(tree);
     return tree;
 }
-
+// is valid BST
+bool dfs(Node<int>* root, int min_val, int max_val) {
+    if (!root) return true;
+    if ((min_val >= root->val || root->val >= max_val)) return false;
+    return dfs(root->left, min_val, root->val) && dfs(root->right, root->val, max_val);
+}
+bool valid_bst(Node<int>* root) {
+    return dfs(root, std::numeric_limits<int>::min(), std::numeric_limits<int>::max());
+}
+// BST lowest common ancestor
+int lca_on_bst(Node<int>* bst, int p, int q) {
+    if (p < bst->val && q < bst->val) {
+        return lca_on_bst(bst->left, p, q);
+    } else if (p > bst->val && q > bst->val) {
+        return lca_on_bst(bst->right, p, q);
+    } else {
+        return bst->val;
+    }
+}
+// level order traversal
+std::vector<std::vector<int>> level_order_traversal(Node<int>* root) {
+    std::vector<std::vector<int>> res;
+    if (root == nullptr) return res;
+    std::queue<Node<int>*> level;
+    level.push(root);
+    while (!level.empty()) {
+        int n = level.size();
+        std::vector<int> new_level;
+        for (int i = 0; i < n; i++) {
+            Node<int>* node = level.front();
+            new_level.emplace_back(node->val);
+            if (node->left) level.push(node->left);
+            if (node->right) level.push(node->right);
+            level.pop();
+        }
+        res.emplace_back(new_level);
+    }
+    return res;
+}
 int main(int , char** )
 {
     string test = "test";

@@ -1,9 +1,4 @@
-#include <string>
-#include <iostream>
-#include <list>
-#include <ranges>
-#include <vector>
-#include <algorithm>
+#include <bits/stdc++.h>
 
 using namespace std;
 
@@ -32,8 +27,6 @@ bool isPalindrome(const string& str)
 }
 int makePalindrome(string&  str)
 {
-    int left = 0;
-    int right = str.size() - 1;
     int counter = 0;
     for(int i=0; i <str.size(); i++)
     {
@@ -73,8 +66,8 @@ int tree_height(Node<int>* tree) {
     int left_height = tree_height(tree->left);
     int right_height = tree_height(tree->right);
     if (left_height == -1 || right_height == -1) return -1;
-    if (std::abs(left_height - right_height) > 1) return -1;
-    return std::max(left_height, right_height) + 1;
+    if (abs(left_height - right_height) > 1) return -1;
+    return max(left_height, right_height) + 1;
 }
 bool is_balanced(Node<int>* tree) {
     return tree_height(tree) != -1;
@@ -85,7 +78,7 @@ int dfs(Node<int>* root) {
     // Null node adds no depth
     if (root == nullptr) return 0;
     // num nodes in longest path of current subtree = max num nodes of its two subtrees + 1 current node
-    return std::max(dfs(root->left), dfs(root->right)) + 1;
+    return max(dfs(root->left), dfs(root->right)) + 1;
 }
 int tree_max_depth(Node<int>* root) {
     return root ? dfs(root) - 1 : 0;
@@ -96,13 +89,13 @@ int dfs(Node<int>* root, int max_sofar) {
     if (!root) return 0;
     int total = 0;
     if (root->val >= max_sofar) total++;
-    total += dfs(root->left, std::max(max_sofar, root->val));
-    total += dfs(root->right, std::max(max_sofar, root->val));
+    total += dfs(root->left, max(max_sofar, root->val));
+    total += dfs(root->right, max(max_sofar, root->val));
     return total;
 }
 int visible_tree_node(Node<int>* root) {
     // start max_sofar with smallest number possible so any value root has is greater than it
-    return dfs(root, std::numeric_limits<int>::min());
+    return dfs(root, numeric_limits<int>::min());
 }
 
 // invert a tree
@@ -127,7 +120,7 @@ bool dfs(Node<int>* root, int min_val, int max_val) {
     return dfs(root->left, min_val, root->val) && dfs(root->right, root->val, max_val);
 }
 bool valid_bst(Node<int>* root) {
-    return dfs(root, std::numeric_limits<int>::min(), std::numeric_limits<int>::max());
+    return dfs(root, numeric_limits<int>::min(), numeric_limits<int>::max());
 }
 // BST lowest common ancestor
 int lca_on_bst(Node<int>* bst, int p, int q) {
@@ -140,14 +133,14 @@ int lca_on_bst(Node<int>* bst, int p, int q) {
     }
 }
 // level order traversal
-std::vector<std::vector<int>> level_order_traversal(Node<int>* root) {
-    std::vector<std::vector<int>> res;
+vector<vector<int>> level_order_traversal(Node<int>* root) {
+    vector<vector<int>> res;
     if (root == nullptr) return res;
-    std::queue<Node<int>*> level;
+    queue<Node<int>*> level;
     level.push(root);
     while (!level.empty()) {
         int n = level.size();
-        std::vector<int> new_level;
+        vector<int> new_level;
         for (int i = 0; i < n; i++) {
             Node<int>* node = level.front();
             new_level.emplace_back(node->val);
@@ -159,6 +152,7 @@ std::vector<std::vector<int>> level_order_traversal(Node<int>* root) {
     }
     return res;
 }
+
 int main(int , char** )
 {
     string test = "test";

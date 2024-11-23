@@ -1,4 +1,4 @@
-# Kraken-Task
+# Sample C++ Apps build in Docker with Support for ctest 
 
 Project Structure:
     /Dockerfile
@@ -6,11 +6,11 @@ Project Structure:
     /README.md
     /docker_build.sh
     /docker_shell.sh
-    /myapp/CMakeLists.txt
-    /myapp/src/TraderApp.cpp
-    /myapp/src/TradeProcessor.cpp
-    /myapp/src/include/TradeProcessor.h
-    /myapp/build
+    /apps/CMakeLists.txt
+    /apps/src/TraderApp.cpp
+    /apps/src/TradeProcessor.cpp
+    /apps/src/include/TradeProcessor.h
+    /apps/build
 
 Design:
     The main udp server TradeApp has io_service loop to handle all inputs.
@@ -31,8 +31,8 @@ Dev environment:
 
 Run:
     1. Run <cmake --build .> from build folder
-    2. Output is /myapp/build/trader
-    3. Run /myapp/build/trader > output.csv
+    2. Output is /apps/build/trader
+    3. Run /apps/build/trader > output.csv
 
 Todo:
     1. Consider abstraction of order execution

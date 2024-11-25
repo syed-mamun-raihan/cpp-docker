@@ -221,10 +221,10 @@ int binary_tree_min_depth(Node<int>* root) {
 }
 // Shortest Path First
 // BFS template
-int bfs(std::vector<std::vector<int>>& graph, int root, int target) {
-    std::queue<int> q;
+int bfs(vector<vector<int>>& graph, int root, int target) {
+    queue<int> q;
     q.push(root);
-    std::unordered_set<int> visited;
+    unordered_set<int> visited;
     visited.emplace(root);
     int level = 0;
     while (!q.empty()) {
@@ -244,9 +244,100 @@ int bfs(std::vector<std::vector<int>>& graph, int root, int target) {
     }
     return level;
 }
-
-int shortest_path(std::vector<std::vector<int>>& graph, int a, int b) {
+int shortest_path(vector<vector<int>>& graph, int a, int b) {
     return bfs(graph, a, b);
+}
+// Flood Fill
+vector<Coordinate> get_neighbors(vector<vector<int>>& image, Coordinate node, int root_color, int num_rows, int num_cols) {
+    vector<Coordinate> neighbors;
+    array<int, 4> delta_row = {-1, 0, 1, 0};
+    array<int, 4> delta_col = {0, 1, 0, -1};
+    for (int i = 0; i < 4; i++) {
+        int neighbor_row = node.r + delta_row[i];
+        int neighbor_col = node.c + delta_col[i];
+        if (0 <= neighbor_row && neighbor_row < num_rows && 0 <= neighbor_col && neighbor_col < num_cols) {
+            if (image[neighbor_row][neighbor_col] == root_color) {
+                neighbors.emplace_back(neighbor_row, neighbor_col);
+            }
+        }
+    }
+    return neighbors;
+}
+void bfs(vector<vector<int>>& image, Coordinate root, int replacement_color, int num_rows, int num_cols) {
+    queue<Coordinate> q;
+    q.push(root);
+    vector<vector<bool>> visited(num_rows, vector<bool>(num_cols));
+    int root_color = image[root.r][root.c];
+    image[root.r][root.c] = replacement_color; // replace root color
+    visited[root.r][root.c] = true;
+    while (!q.empty()) {
+        Coordinate node = q.front();
+        vector<Coordinate> neighbors = get_neighbors(image, node, root_color, num_rows, num_cols);
+        for (Coordinate neighbor : neighbors) {
+            if (visited[neighbor.r][neighbor.c]) continue;
+            image[neighbor.r][neighbor.c] = replacement_color; // replace color
+            q.push(neighbor);
+            visited[neighbor.r][neighbor.c] = true;
+        }
+        q.pop();
+    }
+}
+vector<vector<int>> flood_fill(int r, int c, int replacement, vector<vector<int>> image) {
+    int num_rows = image.size();
+    int num_cols = image[0].size();
+    bfs(image, Coordinate(r, c), replacement, num_rows, num_cols);
+    return image;
+}
+// islands count
+struct Coordinate {
+    int r;
+    int c;
+    Coordinate(int r, int c) : r{r}, c{c} {}
+};
+vector<Coordinate> get_neighbors(Coordinate cell, int num_rows, int num_cols) 
+{
+    vector<Coordinate> neighbors;
+    array<int, 4> delta_row = {-1, 0, 1, 0};
+    array<int, 4> delta_col = {0, 1, 0, -1};
+    for (int i = 0; i < 4; i++) 
+    {
+        int neighbor_row = cell.r + delta_row[i];
+        int neighbor_col = cell.c + delta_col[i];
+        if (0 <= neighbor_row && neighbor_row < num_rows && 0 <= neighbor_col && neighbor_col < num_cols) {
+            neighbors.emplace_back(neighbor_row, neighbor_col);
+        }
+    }
+    return neighbors;
+}
+void bfs(vector<vector<int>>& grid, Coordinate root, int num_rows, int num_cols) {
+    queue<Coordinate> q;
+    q.push(root);
+    grid[root.r][root.c] = 0;
+    while (!q.empty()) {
+        Coordinate node = q.front();
+        vector<Coordinate> neighbors = get_neighbors(node, num_rows, num_cols);
+        for (Coordinate neighbor : neighbors) {
+            if (grid[neighbor.r][neighbor.c] == 0) continue;
+            q.push(neighbor);
+            grid[neighbor.r][neighbor.c] = 0;
+        }
+        q.pop();
+    }
+}
+int count_number_of_islands(vector<vector<int>>& grid) {
+    int num_rows = grid.size();
+    int num_cols = grid[0].size();
+    int count = 0;
+    // bfs starting from each unvisited land cell
+    for (int r = 0; r < num_rows; r++) {
+        for (int c = 0; c < num_cols; c++) {
+            if (grid[r][c] == 0) continue;
+            bfs(grid, Coordinate(r, c), num_rows, num_cols);
+            // bfs would find 1 connected island, increment count
+            count++;
+        }
+    }
+    return count;
 }
 
 int main(int , char** )

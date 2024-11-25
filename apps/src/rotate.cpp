@@ -36,57 +36,43 @@ void rotate (ForwardIterator first, ForwardIterator middle,
 
 //-----------------
 // LRU
-class LRUCache{
-    public:
-    LRUCache(int capacity_)
-    {
-        capacity = capacity_;
-    }
-
-    void add(int key, string data)
-    {
-        if(db.size() == capacity)
-        {
-            auto it = LRUstates.begin();     
-            db.erase(it->second);
-            LRUstates.erase(it);
-        }
-        auto now = time(0);
-
-        auto [it, success] = db.emplace(key, {data, now});
-        if(success)
-        {
-            LRUstates.emplace(now, key);
-        }        
-    }
-
-    std::string get(int key) const
-    {
-        auto& [data, now] = db[key];
-        time_t nowUpdate = time(0);
-        auto it = LRUStates.equal_range(now);
-        for(auto exact = it.first; exact != it.second; exact++)
-        {
-            if(exact->second == key)
-            {
-                LRUStates.erase(exact);
+template <class KEY_T, class VAL_T> class LRUCache{
+private:
+    list< pair<KEY_T,VAL_T> > item_list;
+    unordered_map<KEY_T, decltype(item_list.begin()) > item_map;
+    size_t cache_size;
+private:
+    void clean(void){
+            while(item_map.size()>cache_size){
+                    auto last_it = item_list.end(); last_it --;
+                    item_map.erase(last_it->first);
+                    item_list.pop_back();
             }
-        }
-        LRUstates[nowUpdate] = key;
-        now = nowUpdate;
-        return data;
+    }
+public:
+    LRUCache(int cache_size_):cache_size(cache_size_){
+    }
+    void put(const KEY_T &key, const VAL_T &val){
+            auto it = item_map.find(key);
+            if(it != item_map.end()){
+                    item_list.erase(it->second); // iterartor of the list
+                    item_map.erase(it); // iterator of the map
+            }
+            item_list.push_front(make_pair(key,val));
+            item_map.insert(make_pair(key, item_list.begin()));
+            clean();
     }
 
-    void update(int key, std::string data);
-    void erase(int key);
-
-    private:
-    int capacity = 10;
-    using cache_db = std::unordered_map<int, pair<string, time_t>>;
-    cache_db db;
-    std::multimap<time_t, int> LRUstates;
+    bool exist(const KEY_T &key){
+            return (item_map.count(key)>0);
+    }
+    VAL_T get(const KEY_T &key){
+            assert(exist(key));
+            auto it = item_map.find(key);
+            item_list.splice(item_list.begin(), item_list, it->second); // put it in the front
+            return it->second->second;
+    }
 };
-
 
  
 // the variant to visit

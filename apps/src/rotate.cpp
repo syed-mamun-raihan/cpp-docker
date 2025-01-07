@@ -1,14 +1,128 @@
-#include <iostream>     // std::cout
-#include <algorithm>    // std::rotate_copy
-#include <vector>       // std::vector
-// variant example
-#include <iomanip>
-#include <iostream>
-#include <string>
-#include <type_traits>
-#include <variant>
-#include <vector>
+#include <bits/stdc++.h>
+using namespace std;
+ 
+/* Link list node */
+class Node {
+public:
+    int data;
+    Node* next;
+};
+ 
+/* A utility function to push a node */
+void push(Node** head_ref, int new_data)
+{
+    /* allocate node */
+    Node* new_node = new Node();
+ 
+    /* put in the data */
+    new_node->data = new_data;
+ 
+    /* link the old list of the new node */
+    new_node->next = (*head_ref);
+ 
+    /* move the head to point to the new node */
+    (*head_ref) = new_node;
+}
+ 
+/* A utility function to print linked list */
+void printList(Node* node)
+{
+    while (node != NULL) {
+        cout << node->data << " -> ";
+        node = node->next;
+    }
+    cout << "NULL";
+}
+ 
+class Node {
+  public:
+    int data;
+    Node *next;
 
+    Node(int new_data) {
+        data = new_data;
+        next = nullptr;
+    }
+};
+
+// Function to rotate the linked list
+// to the left by k places
+Node *rotate(Node *head, int k) {
+
+    // If the linked list is empty or no rotations are
+    // needed, then return the original linked list
+    if (k == 0 || head == nullptr)
+        return head;
+
+    Node *curr = head;
+    int len = 1;
+  
+      // Find the length of linked list
+    while (curr->next != nullptr) {
+        curr = curr->next;
+        len += 1;
+    }
+
+      // Modulo k with length of linked list to handle
+      // large values of k
+    k %= len;
+  
+    if (k == 0)
+        return head;
+  
+      // Make the linked list circular
+    curr->next = head;
+
+      // Traverse the linked list to find the kth node
+    curr = head;
+    for (int i = 1; i < k; i++)
+        curr = curr->next;
+
+      // Update the (k + 1)th node as the new head
+    head = curr->next;
+  
+      // Break the loop by updating next pointer of kth node
+    curr->next = nullptr;
+    return head;
+}
+//
+class Node {
+public:
+    int data;
+    Node* next;
+
+    Node(int new_data) {
+        data = new_data;
+        next = nullptr;
+    }
+};
+
+// Given the head of a list, reverse the list and return the
+// head of reversed list
+Node* reverseList(Node* head) {
+    
+      // Initialize three pointers: curr, prev and next
+    Node *curr = head, *prev = nullptr, *next;
+
+      // Traverse all the nodes of Linked List
+    while (curr != nullptr) {
+      
+        // Store next
+        next = curr->next;
+      
+        // Reverse current node's next pointer
+        curr->next = prev;
+      
+        // Move pointers one position ahead
+        prev = curr;
+        curr = next;
+    }
+      
+      // Return the head of reversed linked list
+    return prev;
+}
+
+// Print container
 template<typename T>
 std::ostream& print(std::ostream &out, T const &val) { return (out << val << " "); }
 
@@ -19,19 +133,6 @@ template<template<typename, typename...> class TT, typename... Args>
 std::ostream& operator<<(std::ostream &out, TT<Args...> const &cont) {
   for(auto elem : cont) print(out, elem);
   return out;
-}
-
-template <class ForwardIterator>
-void rotate (ForwardIterator first, ForwardIterator middle,
-               ForwardIterator last)
-{
-  ForwardIterator next = middle;
-  while (first!=next)
-  {
-    std::swap (*first++,*next++);
-    if (next==last) next=middle;
-    else if (first==middle) middle=next;
-  }
 }
 
 //-----------------
@@ -83,6 +184,22 @@ template<class... Ts>
 struct overload : Ts... 
 { 
     using Ts::operator()...; 
+};
+
+template <typename T>
+concept Number = (std::integral<T> || std::floating_point<T>) 
+                 && !std::same_as<T, bool>
+                 && !std::same_as<T, char>
+                 && !std::same_as<T, char8_t>
+                 && !std::same_as<T, char16_t>
+                 && !std::same_as<T, char32_t>
+                 && !std::same_as<T, wchar_t>;
+
+template <typename BusinessObjectWithEncodeableStuff_t>
+concept BusinessObjectWithEncodeableStuff = requires (BusinessObjectWithEncodeableStuff_t bo) {
+  bo.interfaceA();
+  bo.interfaceB();
+  { bo.interfaceC() } -> std::same_as<int>;
 };
 
 int main()

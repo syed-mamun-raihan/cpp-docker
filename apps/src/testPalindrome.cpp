@@ -1,7 +1,34 @@
 #include <bits/stdc++.h>
 
 using namespace std;
-
+// permutations
+void dfs(int startIndex, std::vector<char>& path, std::vector<bool>& used, std::vector<std::string>& res, std::string& letters) {
+    if (startIndex == letters.size()) {
+        // make a deep copy, otherwise we'd be appending the same list over and over
+        std::string s(path.begin(), path.end());
+        res.emplace_back(s);
+        return;
+    }
+    for (int i = 0; i < letters.size(); i++) {
+        // skip used letters
+        if (used[i]) continue;
+        // add letter to permutation, mark letter as used
+        path.emplace_back(letters[i]);
+        used[i] = true;
+        dfs(startIndex + 1, path, used, res, letters);
+        // remove letter from permutation, mark letter as unused
+        path.pop_back();
+        used[i] = false;
+    }
+}
+std::vector<std::string> permutations(std::string letters) {
+    std::vector<std::string> res;
+    std::vector<char> path;
+    std::vector<bool> used(letters.size(), false);
+    dfs(0, path, used, res, letters);
+    return res;
+}
+//-------
 template<typename T=int>
 struct Node {
     T val = T();

@@ -1,5 +1,4 @@
 # Build Stage
-# First pull Golang image
 FROM amd64/ubuntu:24.10 AS apps
 
 #install tools 
@@ -20,7 +19,11 @@ RUN apt-get -y update && \
 	    git \
         catch2 \
         openjdk-21-jdk \
-        golang-go
+        golang-go \
+        rustc \
+        poco* \
+        conan* \
+        npm
 
 #copy application
 WORKDIR /
